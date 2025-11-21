@@ -1,36 +1,49 @@
-import pandas as pd
-from sklearn.datasets import load_iris
-import yaml
+"""
+Download data from Google Cloud Storage
+"""
 import os
+from google.cloud import storage
 
-# 模拟云端下载逻辑
-def download_data_from_cloud(config):
-    print("正在尝试从云端下载数据...")
-    # TODO: 这里实现真正的云端下载逻辑
-    # 例如使用 google.cloud.storage 或 boto3
-    # bucket_name = "my-project-bucket"
-    # source_blob_name = "data/iris.csv"
-    # destination_file_name = config['data']['raw_data_path']
-    pass
-
-def load_data(config_path="config/config.yaml"):
-    """
-    加载数据。
-    为了演示方便，如果本地没有文件，默认加载 Sklearn 的 Iris 数据集。
-    """
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-
-    if config['data']['download_from_cloud']:
-        download_data_from_cloud(config)
-
-    print("正在加载数据...")
+def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
+    """Download a file from GCS bucket."""
     
-    # 这里是为了演示方便，直接用 sklearn 的数据
-    # 在实际项目中，你应该使用 pd.read_csv(config['data']['raw_data_path'])
-    iris = load_iris()
-    df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
-    df['target'] = iris.target
+    # Set credentials path
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcs-credentials.json"
     
-    print(f"数据加载成功，形状: {df.shape}")
-    return df
+    # Initialize client
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    
+    # Download
+    blob.download_to_filename(destination_file_name)
+    print(f"✓ Downloaded {source_blob_name} to {destination_file_name}")
+
+
+def download_all_data():
+    """Download all required datasets."""
+    
+    BUCKET_NAME = "from-air-to-care-data-1990"  # Your bucket name
+    
+    files = [
+        "nyc_weather_by_borough_2017-2024.csv",
+        "Respiratory.csv",
+        "Asthama.csv",
+        "Air_Quality.csv"
+    ]
+    
+    # Create data directory if it doesn't exist
+    os.makedirs("data/raw", exist_ok=True)
+    
+    for file in files:
+        download_from_gcs(
+            bucket_name=BUCKET_NAME,
+            source_blob_name=file,
+            destination_file_name=f"data/raw/{file}"
+        )
+    
+    print("\n All data downloaded successfully!")
+
+
+if __name__ == "__main__":
+    download_all_data()
