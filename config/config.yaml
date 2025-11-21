@@ -4,7 +4,7 @@
 
 # Data Settings
 data:
-  bucket_name: "your-actual-bucket-name"  # Your GCS bucket
+  bucket_name: "from-air-to-care-data-1990"  # Your GCS bucket
   files:
     weather: "nyc_weather_by_borough_2017-2024.csv"
     respiratory: "Respiratory.csv"
