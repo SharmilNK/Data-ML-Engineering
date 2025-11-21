@@ -1,21 +1,65 @@
-app:
-  name: "iris-classification-model"
-  version: "1.0.0"
+# ============================================
+# FROM AIR TO CARE - PIPELINE CONFIGURATION
+# ============================================
 
+# Data Settings
 data:
-  # 如果是从云端下载，这里填云端路径，例如 gs://my-bucket/data.csv
-  raw_data_path: "data/raw/iris.csv"
-  # 这是一个开关，设为 True 时会尝试从云端下载
-  download_from_cloud: False 
-  test_size: 0.2
-  random_state: 42
+  bucket_name: "your-actual-bucket-name"  # Your GCS bucket
+  files:
+    weather: "nyc_weather_by_borough_2017-2024.csv"
+    respiratory: "Respiratory.csv"
+    asthma: "Asthama.csv"
+    air_quality: "Air_Quality.csv"
+  local_path: "data/raw"
 
-train:
-  model_type: "random_forest"
-  n_estimators: 100
-  max_depth: 5
-  model_save_path: "models/model.pkl"
+# Preprocessing Settings
+preprocessing:
+  valid_boroughs:
+    - "brooklyn"
+    - "bronx"
+    - "manhattan"
+    - "staten island"
+    - "queens"
 
-api:
-  host: "0.0.0.0"
-  port: 8000
+# Train/Val/Test Split
+split:
+  train_years: [2017, 2018, 2019]
+  val_year: 2023
+  test_year: 2024
+
+# Feature Engineering
+features:
+  lag_days: [7]  # Using 7-day lag (removed 1-day to avoid leakage)
+  rolling_window: 7
+  rolling_shift: 3  # Shift for 3-day ahead prediction
+
+# Target Variable
+target:
+  column: "Total_Hospitalization"
+  threshold_percentile: 75  # Top 25% = High Risk
+
+# Classification Model
+classification:
+  model_type: "GradientBoostingClassifier"
+  params:
+    n_estimators: 100
+    max_depth: 5
+    random_state: 42
+
+# Regression Model
+regression:
+  model_type: "GradientBoostingRegressor"
+  params:
+    n_estimators: 100
+    max_depth: 5
+    random_state: 42
+
+# Output Paths
+output:
+  model_dir: "models"
+  results_dir: "results"
+
+# MLFlow Settings (for Step 4)
+mlflow:
+  experiment_name: "from-air-to-care"
+  tracking_uri: "mlruns"
