@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data & Models (不要上传大文件)
+data/
+models/
+*.pkl
+
+# Environment variables
+.env
+.venv
+env/
+venv/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

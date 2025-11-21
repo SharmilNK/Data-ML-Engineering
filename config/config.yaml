@@ -1,0 +1,21 @@
+app:
+  name: "iris-classification-model"
+  version: "1.0.0"
+
+data:
+  # 如果是从云端下载，这里填云端路径，例如 gs://my-bucket/data.csv
+  raw_data_path: "data/raw/iris.csv"
+  # 这是一个开关，设为 True 时会尝试从云端下载
+  download_from_cloud: False 
+  test_size: 0.2
+  random_state: 42
+
+train:
+  model_type: "random_forest"
+  n_estimators: 100
+  max_depth: 5
+  model_save_path: "models/model.pkl"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
