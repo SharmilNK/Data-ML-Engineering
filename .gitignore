@@ -3,10 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Data & Models (不要上传大文件)
+# Data & Models
 data/
 models/
 *.pkl
+*.json
 
 # Environment variables
 .env
