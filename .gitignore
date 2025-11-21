@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 # Data & Models
-# data/
-# models/
+data/
+models/
 *.pkl
 *.json
 
