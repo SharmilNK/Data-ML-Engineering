@@ -2,13 +2,13 @@
 Main Pipeline - Run full training pipeline
 """
 import yaml
-from src.data_loader import load_config, load_data
-from src.preprocessing import preprocess_data
-from src.feature_engineering import create_features, create_target
-from src.train import prepare_splits, train_classifier, train_regressor, save_models
+from data_loader import load_config, load_data
+from preprocessing import preprocess_data
+from feature_engineering import create_features, create_target
+from train import prepare_splits, train_classifier, train_regressor, save_models
 
 
-def run_pipeline(config_path="config.yaml"):
+def run_pipeline(config_path="../config/config.yaml"):
     """Run the complete ML pipeline."""
     print("=" * 70)
     print("FROM AIR TO CARE - ML PIPELINE")

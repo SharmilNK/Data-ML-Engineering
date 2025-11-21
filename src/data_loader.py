@@ -7,7 +7,7 @@ import yaml
 from google.cloud import storage
 
 
-def load_config(config_path="config.yaml"):
+def load_config(config_path="../config/config.yaml"):
     """Load configuration from YAML file."""
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -16,7 +16,7 @@ def load_config(config_path="config.yaml"):
 
 def download_from_gcs(bucket_name, source_blob, destination):
     """Download a single file from GCS."""
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "data/gcs-credentials.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../data/gcs-credentials.json"
     
     client = storage.Client()
     bucket = client.bucket(bucket_name)
