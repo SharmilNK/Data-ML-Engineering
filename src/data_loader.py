@@ -6,6 +6,30 @@ import pandas as pd
 import yaml
 from google.cloud import storage
 
+def setup_credentials():
+    """Setup GCS credentials from file or environment variable."""
+    
+    # Check if credentials file exists
+    cred_file = "data/gcs-credentials.json"
+    if os.path.exists(cred_file):
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_file
+        return
+    
+    # Check if credentials are in environment variable
+    creds_json = os.environ.get("GCS_CREDENTIALS_JSON")
+    if creds_json:
+        # Write to temp file
+        with open("/tmp/gcs-credentials.json", "w") as f:
+            f.write(creds_json)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcs-credentials.json"
+        return
+    
+    print("  Warning: No GCS credentials found!")
+    print("   Please either:")
+    print("   1. Place gcs-credentials.json in data/ folder")
+    print("   2. Set GCS_CREDENTIALS_JSON environment variable")
+
+
 
 def load_config(config_path="../config/config.yaml"):
     """Load configuration from YAML file."""
