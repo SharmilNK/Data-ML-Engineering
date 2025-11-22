@@ -7,7 +7,7 @@ pyyaml==6.0.1
 requests==2.31.0
 joblib==1.3.2
 
-# 如果你要用 GCS 或 S3，解开下面对应的包
+
 
 google-cloud-storage
 
