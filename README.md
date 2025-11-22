@@ -136,7 +136,6 @@ from-air-to-care/
 │   └── config.yaml             # Configuration file
 │
 ├── data/
-│   ├── download_data.py        # Script to fetch data from GCS
 │   ├── gcs-credentials.json    # GCS credentials (gitignored)
 │   └── raw/                    # Downloaded CSV files
 │
@@ -324,3 +323,4 @@ MLFlow allows you to:
 - NYC Department of Health and Mental Hygiene (DOHMH)
 - NOAA for weather data
 - EPA for air quality data
+
