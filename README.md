@@ -18,6 +18,7 @@ Using alternative data (weather, air quality, health records) to forecast hospit
 - [Docker](#docker)
 - [MLFlow Experiment Tracking](#mlflow-experiment-tracking)
 - [Cloud Services Used](#cloud-services-used)
+- [API Deployment and Usage](#api-deployment-and-usage)
 - [Future Work](#future-work)
 
 ---
@@ -34,6 +35,10 @@ Using alternative data (weather, air quality, health records) to forecast hospit
 
 ### Summary
 We built a predictive system that forecasts hospital admissions 3-7 days in advance by combining air pollution, weather, and health data. Our models achieve **91% accuracy** in identifying high-risk days and predict patient volumes with **R² = 0.92**, enabling hospitals to optimize staffing and reduce surge-related costs by 15-25%.
+
+### 🚀 Live API
+**Deployed API:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app  
+**API Documentation:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/docs
 
 ---
 
@@ -308,6 +313,194 @@ MLFlow allows you to:
 | **Google Cloud Storage** | Store raw CSV data files |
 | **MLFlow** | Experiment tracking and model versioning |
 | **Docker** | Containerization for reproducibility |
+| **Google Cloud Run** | Host API endpoint for model predictions |
+
+---
+
+## API Deployment and Usage
+
+### Local API Testing
+
+Before deploying, test the API locally:
+
+```bash
+# Start the API server
+python -m uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
+
+# Or using Docker
+docker run -p 8000:8000 \
+  -v $(pwd)/data/gcs-credentials.json:/app/data/gcs-credentials.json \
+  from-air-to-care serve
+```
+
+### Test API Endpoints
+
+**Health Check:**
+```bash
+curl http://localhost:8000/health
+```
+
+**Make a Prediction:**
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Temp_Max_C": 25.0,
+    "Temp_Min_C": 15.0,
+    "Humidity_Avg": 70.0,
+    "Precip_mm": 0.0,
+    "month": 6,
+    "day": 15,
+    "day_of_week": 5,
+    "quarter": 2,
+    "season": 3,
+    "borough": "brooklyn"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "predictions": {
+    "classification": {
+      "is_high_risk": false,
+      "probability": {
+        "normal": 0.85,
+        "high_risk": 0.15
+      }
+    },
+    "regression": {
+      "predicted_admissions": 523.4,
+      "predicted_admissions_rounded": 523
+    }
+  }
+}
+```
+
+### Deploy to Google Cloud Run
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+**Quick Deploy:**
+```bash
+# Set your project ID
+export PROJECT_ID=your-project-id
+
+# Build and deploy
+gcloud builds submit --config cloudbuild.yaml
+```
+
+**Get API URL:**
+```bash
+gcloud run services describe from-air-to-care-api \
+  --region us-central1 \
+  --format 'value(status.url)'
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API information |
+| `/health` | GET | Health check |
+| `/predict` | POST | Make predictions |
+
+### API Request Format
+
+The `/predict` endpoint accepts the following fields (all optional, missing values default to 0):
+
+**Weather Features:**
+- `Temp_Max_C`: Maximum temperature in Celsius
+- `Temp_Min_C`: Minimum temperature in Celsius
+- `Humidity_Avg`: Average humidity percentage
+- `Precip_mm`: Precipitation in millimeters
+- `WindSpeed_mps`: Wind speed in meters per second
+
+**Air Quality Features:**
+- `AQ_PM2_5`: PM2.5 concentration
+- `AQ_Ozone`: Ozone concentration
+- `AQ_NO2`: NO2 concentration
+
+**Temporal Features:**
+- `month`: Month (1-12)
+- `day`: Day of month (1-31)
+- `day_of_week`: Day of week (0=Monday, 6=Sunday)
+- `quarter`: Quarter (1-4)
+- `season`: Season (1=Winter, 2=Spring, 3=Summer, 4=Fall)
+
+**Borough:**
+- `borough`: One of "brooklyn", "bronx", "manhattan", "queens", "staten island"
+
+**Lag Features (optional):**
+- `Total_Hospitalization_lag7`: 7-day lag of total hospitalizations
+- `Temp_Max_C_lag7`: 7-day lag of max temperature
+- `Humidity_Avg_lag7`: 7-day lag of humidity
+
+**Rolling Features (optional):**
+- `Total_Hospitalization_roll7`: 7-day rolling average of hospitalizations
+- `Temp_Max_C_roll7`: 7-day rolling average of temperature
+
+### Deployed API URL
+
+**Production API:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app
+
+#### Test the Deployed API
+
+**Health Check:**
+```bash
+curl https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/health
+```
+
+**Make a Prediction:**
+```bash
+curl -X POST "https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Temp_Max_C": 25.0,
+    "Temp_Min_C": 15.0,
+    "Humidity_Avg": 70.0,
+    "Precip_mm": 0.0,
+    "month": 6,
+    "day": 15,
+    "day_of_week": 5,
+    "quarter": 2,
+    "season": 3,
+    "borough": "brooklyn"
+  }'
+```
+
+**Using Python:**
+```python
+import requests
+
+API_URL = "https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app"
+
+# Health check
+response = requests.get(f"{API_URL}/health")
+print(response.json())
+
+# Make prediction
+prediction = requests.post(
+    f"{API_URL}/predict",
+    json={
+        "Temp_Max_C": 25.0,
+        "Temp_Min_C": 15.0,
+        "Humidity_Avg": 70.0,
+        "month": 6,
+        "day": 15,
+        "day_of_week": 5,
+        "borough": "brooklyn"
+    }
+)
+print(prediction.json())
+```
+
+**Interactive API Documentation:**
+- Swagger UI: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/docs
+- ReDoc: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/redoc
+
+Update the frontend `app_ui.py` with the deployed API URL above.
 
 ---
 

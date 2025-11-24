@@ -36,5 +36,7 @@ EXPOSE 8000
 ENTRYPOINT ["python", "entrypoint.py"]
 
 # Step 11: Default command (train)
-CMD ["train"]
-
+# CMD ["train"]
+# 确保最后一行是：
+# Step 11: Default command (serve for API)
+CMD ["serve"]

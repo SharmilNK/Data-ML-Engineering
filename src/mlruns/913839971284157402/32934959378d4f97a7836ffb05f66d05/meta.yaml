@@ -1,0 +1,14 @@
+artifact_uri: /Users/yifei/Documents/Duke/AIPI 510/Code/Projects/proj_3/Data-ML-Engineering/src/mlruns/913839971284157402/32934959378d4f97a7836ffb05f66d05/artifacts
+end_time: 1764008381853
+entry_point_name: ''
+experiment_id: '913839971284157402'
+lifecycle_stage: active
+run_id: 32934959378d4f97a7836ffb05f66d05
+run_name: gradient_boosting_run
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764008374587
+status: 3
+tags: []
+user_id: yifei

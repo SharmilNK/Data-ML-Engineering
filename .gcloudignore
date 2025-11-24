@@ -1,0 +1,53 @@
+# Git files
+.git
+.gitignore
+.github
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data files (downloaded at runtime)
+data/raw/
+*.csv
+
+# MLFlow runs (will be created fresh)
+mlruns/
+src/mlruns/
+
+# Artifacts (generated during training)
+artifacts/
+src/artifacts/
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+notebooks/
+
+# Credentials (should use Secret Manager)
+data/gcs-credentials.json
+*.json
+
+# Documentation
+*.md
+!README.md
+
