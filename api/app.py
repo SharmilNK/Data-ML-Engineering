@@ -1,17 +1,21 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 import sys
 import os
 
-# 添加项目根目录到 path，确保能导入 src
+# Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.predict import ModelService
 
-app = FastAPI(title="ML Project API", version="1.0")
+app = FastAPI(
+    title="From Air to Care API",
+    description="Predict hospital admissions based on environmental factors",
+    version="1.0"
+)
 
-# 初始化模型服务
-# 注意：Docker 运行时路径可能需要调整，这里假设在根目录下运行
+# Initialize model service
 model_service = None
 
 @app.on_event("startup")
@@ -19,40 +23,100 @@ def load_model():
     global model_service
     try:
         model_service = ModelService()
-        print("模型加载成功")
+        print("✓ Model loaded successfully")
     except Exception as e:
-        print(f"模型加载失败: {e}")
+        print(f"✗ Model loading failed: {e}")
+        raise
 
 class PredictionRequest(BaseModel):
-    # 定义输入数据格式 (基于 Iris 数据集)
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+    """Request model for prediction."""
+    # Weather features
+    Temp_Max_C: Optional[float] = None
+    Temp_Min_C: Optional[float] = None
+    Humidity_Avg: Optional[float] = None
+    Precip_mm: Optional[float] = None
+    WindSpeed_mps: Optional[float] = None
+    
+    # Air quality features (if available)
+    AQ_PM2_5: Optional[float] = None
+    AQ_Ozone: Optional[float] = None
+    AQ_NO2: Optional[float] = None
+    
+    # Temporal features
+    month: Optional[int] = None
+    day: Optional[int] = None
+    day_of_week: Optional[int] = None
+    quarter: Optional[int] = None
+    season: Optional[int] = None
+    
+    # Borough (will be one-hot encoded)
+    borough: Optional[str] = None  # "brooklyn", "bronx", "manhattan", "queens", "staten island"
+    
+    # Lag features (if available)
+    Total_Hospitalization_lag7: Optional[float] = None
+    Temp_Max_C_lag7: Optional[float] = None
+    Humidity_Avg_lag7: Optional[float] = None
+    
+    # Rolling features
+    Total_Hospitalization_roll7: Optional[float] = None
+    Temp_Max_C_roll7: Optional[float] = None
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the ML API"}
+    return {
+        "message": "Welcome to From Air to Care API",
+        "endpoints": {
+            "/predict": "POST - Make predictions",
+            "/health": "GET - Health check"
+        }
+    }
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint."""
+    if model_service is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+    return {"status": "healthy", "model_loaded": True}
 
 @app.post("/predict")
 def predict(request: PredictionRequest):
+    """
+    Predict hospital admissions.
+    
+    Returns both classification (high-risk day) and regression (admission count).
+    """
     if not model_service:
         raise HTTPException(status_code=500, detail="Model not loaded")
     
     try:
-        # 将输入转换为列表或字典
-        input_data = {
-            'sepal length (cm)': request.sepal_length,
-            'sepal width (cm)': request.sepal_width,
-            'petal length (cm)': request.petal_length,
-            'petal width (cm)': request.petal_width
+        # Convert Pydantic model to dict (Pydantic v2 compatible)
+        input_dict = request.model_dump(exclude_none=True)
+        
+        # Handle borough one-hot encoding
+        if 'borough' in input_dict:
+            borough = input_dict['borough'].lower().strip()
+            valid_boroughs = ['brooklyn', 'bronx', 'manhattan', 'queens', 'staten island']
+            if borough in valid_boroughs:
+                # Add one-hot encoded borough columns
+                for b in valid_boroughs:
+                    input_dict[f'borough_{b.replace(" ", "_")}'] = 1 if b == borough else 0
+            del input_dict['borough']
+        
+        # Make predictions
+        result = model_service.predict(input_dict)
+        
+        return {
+            "success": True,
+            "predictions": {
+                "classification": {
+                    "is_high_risk": result['classification']['is_high_risk'],
+                    "probability": result['classification']['probability']
+                },
+                "regression": {
+                    "predicted_admissions": result['regression']['predicted_count'],
+                    "predicted_admissions_rounded": result['regression']['prediction']
+                }
+            }
         }
-        result = model_service.predict(input_data)
-        
-        # Iris target mapping (0: setosa, 1: versicolor, 2: virginica)
-        target_names = ['setosa', 'versicolor', 'virginica']
-        class_name = target_names[int(result)]
-        
-        return {"prediction": int(result), "class_name": class_name}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")

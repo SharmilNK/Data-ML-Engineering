@@ -4,6 +4,9 @@ Docker Entry Point - Handles different commands
 import sys
 import os
 
+# Add src directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
 
 def main():
     if len(sys.argv) < 2:
@@ -21,16 +24,23 @@ def main():
         print("=" * 60)
         print("STARTING TRAINING PIPELINE")
         print("=" * 60)
-        from main import run_pipeline
+        from src.main import run_pipeline
         run_pipeline()
     
+    # elif command == "serve":
+    #     print("=" * 60)
+    #     print("STARTING API SERVER")
+    #     print("=" * 60)
+    #     import uvicorn
+    #     uvicorn.run("api.app:app", host="0.0.0.0", port=8000, reload=False)
     elif command == "serve":
         print("=" * 60)
         print("STARTING API SERVER")
         print("=" * 60)
         import uvicorn
-        uvicorn.run("api.app:app", host="0.0.0.0", port=8000, reload=False)
-    
+        # Cloud Run uses PORT environment variable (default 8080)
+        port = int(os.environ.get("PORT", 8000))
+        uvicorn.run("api.app:app", host="0.0.0.0", port=port, reload=False)
     elif command == "predict":
         if len(sys.argv) < 4:
             print("Usage: python entrypoint.py predict <date> <borough>")
