@@ -507,9 +507,14 @@ print(prediction.json())
 
 ### 🌐 Live Frontend Application
 
-**Deployed Frontend:** [Link will be added after deployment](#deploy-frontend-to-streamlit-cloud)
+**Deployed Frontend:** [Deploy Now on Streamlit Cloud](https://streamlit.io/cloud)
 
-**Note:** After deploying to Streamlit Cloud, update this section with your live frontend URL.
+**Status:** Ready for deployment! Follow the steps in [Deploy Frontend to Streamlit Cloud](#deploy-frontend-to-streamlit-cloud) section.
+
+**After deployment, update this line with your app URL:**
+```markdown
+**Deployed Frontend:** https://your-app-name.streamlit.app
+```
 
 The frontend application provides an interactive web interface to:
 - Select a date (between January 1, 2022 and December 31, 2024)
@@ -558,23 +563,25 @@ The frontend application provides an interactive web interface to:
 
 **Option 1: Streamlit Cloud (Recommended - Free)**
 
-1. **Push your code to GitHub** (if not already done)
+📖 **Detailed Guide:** See [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DEPLOYMENT.md) for step-by-step instructions.
 
-2. **Go to [Streamlit Cloud](https://streamlit.io/cloud)**
+**Quick Steps:**
 
-3. **Sign in with GitHub**
+1. ✅ **Code is already pushed to GitHub** (`yifei` branch)
 
-4. **Click "New app"**
+2. **Go to [Streamlit Cloud](https://streamlit.io/cloud)** and sign in with GitHub
 
-5. **Configure deployment:**
-   - **Repository:** Select your GitHub repository
-   - **Branch:** `main` (or your default branch)
+3. **Click "New app"** and configure:
+   - **Repository:** `SharmilNK/Data-ML-Engineering`
+   - **Branch:** `main` (or `yifei` for testing)
    - **Main file path:** `frontend/app_ui.py`
    - **Python version:** 3.11
 
-6. **Click "Deploy"**
+4. **Click "Deploy"** (takes 1-2 minutes)
 
-7. **Your app will be live at:** `https://your-app-name.streamlit.app`
+5. **Copy your app URL** (format: `https://your-app-name.streamlit.app`)
+
+6. **Update README** with your deployment URL (see below)
 
 **Option 2: Other Platforms**
 
