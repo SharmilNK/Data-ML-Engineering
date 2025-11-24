@@ -19,6 +19,7 @@ Using alternative data (weather, air quality, health records) to forecast hospit
 - [MLFlow Experiment Tracking](#mlflow-experiment-tracking)
 - [Cloud Services Used](#cloud-services-used)
 - [API Deployment and Usage](#api-deployment-and-usage)
+- [Frontend Application](#frontend-application)
 - [Future Work](#future-work)
 
 ---
@@ -500,7 +501,116 @@ print(prediction.json())
 - Swagger UI: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/docs
 - ReDoc: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/redoc
 
-Update the frontend `app_ui.py` with the deployed API URL above.
+---
+
+## Frontend Application
+
+### 🌐 Live Frontend Application
+
+**Deployed Frontend:** [Deploy Now on Streamlit Cloud](https://streamlit.io/cloud)
+
+**Status:** Ready for deployment! Follow the steps in [Deploy Frontend to Streamlit Cloud](#deploy-frontend-to-streamlit-cloud) section.
+
+**After deployment, update this line with your app URL:**
+```markdown
+**Deployed Frontend:** https://your-app-name.streamlit.app
+```
+
+The frontend application provides an interactive web interface to:
+- Select a date (between January 1, 2022 and December 31, 2024)
+- Select a NYC borough (Brooklyn, Bronx, Manhattan, Queens, Staten Island)
+- Get real-time predictions from the deployed API
+- View predicted hospital admission counts with detailed information
+
+### Run Frontend Locally
+
+**Prerequisites:**
+- Python 3.8+
+- Streamlit installed (`pip install streamlit`)
+
+**Steps:**
+
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Run Streamlit app:**
+   ```bash
+   streamlit run app_ui.py
+   ```
+
+3. **Open in browser:**
+   - The app will automatically open at `http://localhost:8501`
+   - Or manually navigate to the URL shown in the terminal
+
+4. **Configure API URL:**
+   - The default API URL is set to the deployed production API
+   - You can change it in the sidebar if testing with a local API
+
+### Frontend Features
+
+- **📅 Date Selection:** Simple date picker (January 1, 2022 - December 31, 2024)
+  - Automatically extracts temporal features (month, day, day of week, quarter, season)
+- **📍 Borough Selection:** Choose from 5 NYC boroughs (Brooklyn, Bronx, Manhattan, Queens, Staten Island)
+- **📊 Results Display:**
+  - Predicted hospital admission count (large, prominent display)
+  - Exact prediction value
+  - Date and borough information
+  - Interpretation of the prediction
+
+### Deploy Frontend to Streamlit Cloud
+
+**Option 1: Streamlit Cloud (Recommended - Free)**
+
+📖 **Detailed Guide:** See [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DEPLOYMENT.md) for step-by-step instructions.
+
+**Quick Steps:**
+
+1. ✅ **Code is already pushed to GitHub** (`yifei` branch)
+
+2. **Go to [Streamlit Cloud](https://streamlit.io/cloud)** and sign in with GitHub
+
+3. **Click "New app"** and configure:
+   - **Repository:** `SharmilNK/Data-ML-Engineering`
+   - **Branch:** `main` (or `yifei` for testing)
+   - **Main file path:** `frontend/app_ui.py`
+   - **Python version:** 3.11
+
+4. **Click "Deploy"** (takes 1-2 minutes)
+
+5. **Copy your app URL** (format: `https://your-app-name.streamlit.app`)
+
+6. **Update README** with your deployment URL (see below)
+
+**Option 2: Other Platforms**
+
+- **Hugging Face Spaces:** Upload to a Hugging Face Space with Streamlit
+- **Vercel:** Deploy as a Python app (requires additional configuration)
+- **Heroku:** Deploy using Procfile and requirements.txt
+
+### Frontend Code Structure
+
+```
+frontend/
+├── app_ui.py          # Main Streamlit application
+```
+
+**Key Components:**
+- API health check (cached for 60 seconds)
+- Form-based input collection
+- Date picker with automatic feature extraction
+- API request handling with error management
+- Results visualization with color-coded risk indicators
+- Responsive layout using Streamlit columns
+
+### Frontend Requirements
+
+The frontend requires:
+- `streamlit>=1.26.0`
+- `requests>=2.31.0`
+
+These are already included in `requirements.txt`.
 
 ---
 
