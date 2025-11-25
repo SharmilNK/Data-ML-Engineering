@@ -8,6 +8,7 @@ data/
 models/
 *.pkl
 *.json
+mlruns/
 
 # Environment variables
 .env

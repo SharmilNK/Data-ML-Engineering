@@ -41,6 +41,7 @@ def main():
         # Cloud Run uses PORT environment variable (default 8080)
         port = int(os.environ.get("PORT", 8000))
         uvicorn.run("api.app:app", host="0.0.0.0", port=port, reload=False)
+        
     elif command == "predict":
         if len(sys.argv) < 4:
             print("Usage: python entrypoint.py predict <date> <borough>")
