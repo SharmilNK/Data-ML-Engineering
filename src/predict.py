@@ -7,10 +7,9 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-
 class ModelService:
     """Service class to load models and make predictions."""
-    
+
     def __init__(self, model_path=None):
         """
         Initialize model service.
@@ -19,35 +18,36 @@ class ModelService:
             model_path: Path to the saved models.pkl file
         """
         if model_path is None:
-            # Try multiple possible paths (check both relative and absolute)
-            possible_paths = [
-                "models/models.pkl",  # Root models directory
-                "src/models/models.pkl",  # Source models directory
-                "../models/models.pkl",  # Parent models directory
-                "/app/models/models.pkl",  # Docker path (root)
-                "/app/src/models/models.pkl",  # Docker path (src)
-                os.path.join(os.path.dirname(__file__), "models", "models.pkl"),  # Relative to this file
-                os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "models.pkl"),  # Root models
-            ]
-            
-            for path in possible_paths:
-                if os.path.exists(path):
-                    model_path = path
-                    break
+            # Build absolute path to model if not provided
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            model_path = os.path.join(project_root, 'models', 'best_model.pkl')
+        
+        print(f"Looking for model at: {model_path}")
         
         if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found at {model_path}")
+            raise FileNotFoundError(
+                f"Model file not found at {model_path}. "
+                "Please train the model first by running the training pipeline."
+            )
         
-        # Load models
-        with open(model_path, 'rb') as f:
-            artifacts = pickle.load(f)
+        print(f"✓ Loading model from: {model_path}")
+        
+        # Load models (use only ONE method - whichever was used to save)
+        # If saved with joblib, use joblib.load:
+        artifacts = joblib.load(model_path)
+        
+        # OR if saved with pickle, use pickle.load:
+        # with open(model_path, 'rb') as f:
+        #     artifacts = pickle.load(f)
         
         self.classifier = artifacts['classifier']
         self.regressor = artifacts['regressor']
         self.scaler = artifacts['scaler']
         self.feature_cols = artifacts['feature_cols']
         
-        print(f"✓ Models loaded from {model_path}")
+        print(f"✓ Models loaded successfully")
+        print(f"  Classifier: {type(self.classifier).__name__}")
+        print(f"  Regressor: {type(self.regressor).__name__}")
         print(f"  Feature columns: {len(self.feature_cols)}")
     
     def _prepare_features(self, input_data):

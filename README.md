@@ -29,8 +29,7 @@ Using alternative data (weather, air quality, health records) to forecast hospit
 **From Air to Care** is a machine learning system that predicts hospital admission surges in NYC boroughs based on environmental factors. The system helps hospitals proactively allocate resources, reduce costs, and improve patient outcomes.
 
 ### Key Features
-- **Classification:** Predicts if a day will be "high-risk" (top 25% admission volume)
-- **Regression:** Predicts actual patient admission count
+- **Regression:** Predicts actual expected patient admission count
 - **Borough-specific:** Separate predictions for Brooklyn, Bronx, Manhattan, Queens, Staten Island
 - **3-7 day forecasting:** Advance warning for hospital planning
 
@@ -88,11 +87,7 @@ We built a predictive system that forecasts hospital admissions 3-7 days in adva
 
 ### Target Variables
 
-1. **Classification Target:** `High_Risk` (binary)
-   - 1 = Top 25% admission days (≥754 admissions)
-   - 0 = Normal days
-
-2. **Regression Target:** `Total_Hospitalization` (continuous)
+1. **Regression Target:** `Total_Hospitalization` (continuous)
    - Actual count of daily admissions
 
 ---
@@ -118,14 +113,6 @@ We built a predictive system that forecasts hospital admissions 3-7 days in adva
 | Random Forest | 0.904 | ±57.8 | 81.5 | 10.9% |
 | Lasso Regression | 0.842 | ±80.8 | 104.5 | 17.2% |
 | Ridge Regression | 0.733 | ±111.4 | 136.0 | 28.3% |
-
-### Environmental Impact Findings
-
-| Factor | Impact on Admissions |
-|--------|---------------------|
-| Extreme Heat (>30°C) | +40% total, +57% asthma |
-| High Humidity (>80%) | +17% asthma cases |
-| High PM2.5 Days | +45% in Bronx, +38% in Brooklyn |
 
 ---
 
@@ -230,8 +217,13 @@ python main.py
 # Build the image
 docker build -t from-air-to-care .
 
-# Run training (mount credentials)
-docker run -v ${PWD}/data/gcs-credentials.json:/app/data/gcs-credentials.json from-air-to-care train
+# Run training
+docker run -e PYTHONPATH=/app/src -w /app `
+  -v "C:\PWD\src:/app/src" `
+  -v "C:\PWD\config:/app/config" `
+  -v "C:\PWD\data\gcs-credentials.json:/app/data/gcs-credentials.json" `
+  -v "C:\PWD\entrypoint.py:/app/entrypoint.py" `
+  from-air-to-care
 ```
 
 ### Expected Output
@@ -249,29 +241,6 @@ FROM AIR TO CARE - ML PIPELINE WITH MLFLOW
 ✓ MAE: 57.82
 ...
 ✓ PIPELINE COMPLETE!
-```
-
----
-
-## Docker
-
-### Build the Image
-```bash
-docker build -t from-air-to-care .
-```
-
-### Run Training
-```bash
-# Windows PowerShell
-docker run -v ${PWD}/data/gcs-credentials.json:/app/data/gcs-credentials.json from-air-to-care train
-
-# Mac/Linux
-docker run -v $(pwd)/data/gcs-credentials.json:/app/data/gcs-credentials.json from-air-to-care train
-```
-
-### Run API Server
-```bash
-docker run -p 8000:8000 -v ${PWD}/data/gcs-credentials.json:/app/data/gcs-credentials.json from-air-to-care serve
 ```
 
 ### Docker Image Details
@@ -301,13 +270,6 @@ Then open: http://localhost:5000
 - **Metrics:** accuracy, AUROC, recall, precision, R², MAE, RMSE
 - **Artifacts:** confusion_matrix.png, roc_curve.png, models.pkl
 
-### Comparing Runs
-
-MLFlow allows you to:
-- Compare multiple experiment runs side-by-side
-- Track model versioning
-- Reproduce any previous experiment
-
 ---
 
 ## Cloud Services Used
@@ -321,190 +283,9 @@ MLFlow allows you to:
 
 ---
 
-## API Deployment and Usage
-
-### Local API Testing
-
-Before deploying, test the API locally:
-
-```bash
-# Start the API server
-python -m uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
-
-# Or using Docker
-docker run -p 8000:8000 \
-  -v $(pwd)/data/gcs-credentials.json:/app/data/gcs-credentials.json \
-  from-air-to-care serve
-```
-
-### Test API Endpoints
-
-**Health Check:**
-```bash
-curl http://localhost:8000/health
-```
-
-**Make a Prediction:**
-```bash
-curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Temp_Max_C": 25.0,
-    "Temp_Min_C": 15.0,
-    "Humidity_Avg": 70.0,
-    "Precip_mm": 0.0,
-    "month": 6,
-    "day": 15,
-    "day_of_week": 5,
-    "quarter": 2,
-    "season": 3,
-    "borough": "brooklyn"
-  }'
-```
-
-**Expected Response:**
-```json
-{
-  "success": true,
-  "predictions": {
-    "classification": {
-      "is_high_risk": false,
-      "probability": {
-        "normal": 0.85,
-        "high_risk": 0.15
-      }
-    },
-    "regression": {
-      "predicted_admissions": 523.4,
-      "predicted_admissions_rounded": 523
-    }
-  }
-}
-```
-
-### Deploy to Google Cloud Run
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
-
-**Quick Deploy:**
-```bash
-# Set your project ID
-export PROJECT_ID=your-project-id
-
-# Build and deploy
-gcloud builds submit --config cloudbuild.yaml
-```
-
-**Get API URL:**
-```bash
-gcloud run services describe from-air-to-care-api \
-  --region us-central1 \
-  --format 'value(status.url)'
-```
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | API information |
-| `/health` | GET | Health check |
-| `/predict` | POST | Make predictions |
-
-### API Request Format
-
-The `/predict` endpoint accepts the following fields (all optional, missing values default to 0):
-
-**Weather Features:**
-- `Temp_Max_C`: Maximum temperature in Celsius
-- `Temp_Min_C`: Minimum temperature in Celsius
-- `Humidity_Avg`: Average humidity percentage
-- `Precip_mm`: Precipitation in millimeters
-- `WindSpeed_mps`: Wind speed in meters per second
-
-**Air Quality Features:**
-- `AQ_PM2_5`: PM2.5 concentration
-- `AQ_Ozone`: Ozone concentration
-- `AQ_NO2`: NO2 concentration
-
-**Temporal Features:**
-- `month`: Month (1-12)
-- `day`: Day of month (1-31)
-- `day_of_week`: Day of week (0=Monday, 6=Sunday)
-- `quarter`: Quarter (1-4)
-- `season`: Season (1=Winter, 2=Spring, 3=Summer, 4=Fall)
-
-**Borough:**
-- `borough`: One of "brooklyn", "bronx", "manhattan", "queens", "staten island"
-
-**Lag Features (optional):**
-- `Total_Hospitalization_lag7`: 7-day lag of total hospitalizations
-- `Temp_Max_C_lag7`: 7-day lag of max temperature
-- `Humidity_Avg_lag7`: 7-day lag of humidity
-
-**Rolling Features (optional):**
-- `Total_Hospitalization_roll7`: 7-day rolling average of hospitalizations
-- `Temp_Max_C_roll7`: 7-day rolling average of temperature
-
 ### Deployed API URL
 
 **Production API:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app
-
-#### Test the Deployed API
-
-**Health Check:**
-```bash
-curl https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/health
-```
-
-**Make a Prediction:**
-```bash
-curl -X POST "https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/predict" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Temp_Max_C": 25.0,
-    "Temp_Min_C": 15.0,
-    "Humidity_Avg": 70.0,
-    "Precip_mm": 0.0,
-    "month": 6,
-    "day": 15,
-    "day_of_week": 5,
-    "quarter": 2,
-    "season": 3,
-    "borough": "brooklyn"
-  }'
-```
-
-**Using Python:**
-```python
-import requests
-
-API_URL = "https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app"
-
-# Health check
-response = requests.get(f"{API_URL}/health")
-print(response.json())
-
-# Make prediction
-prediction = requests.post(
-    f"{API_URL}/predict",
-    json={
-        "Temp_Max_C": 25.0,
-        "Temp_Min_C": 15.0,
-        "Humidity_Avg": 70.0,
-        "month": 6,
-        "day": 15,
-        "day_of_week": 5,
-        "borough": "brooklyn"
-    }
-)
-print(prediction.json())
-```
-
-**Interactive API Documentation:**
-- Swagger UI: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/docs
-- ReDoc: https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/redoc
-
----
 
 ## Frontend Application
 
@@ -548,44 +329,16 @@ The frontend application provides an interactive web interface to:
 
 ### Frontend Features
 
-- **📅 Date Selection:** Simple date picker (January 1, 2022 - December 31, 2024)
+- **Date Selection:** Simple date picker (January 1, 2022 - December 31, 2024)
   - Automatically extracts temporal features (month, day, day of week, quarter, season)
-- **📍 Borough Selection:** Choose from 5 NYC boroughs (Brooklyn, Bronx, Manhattan, Queens, Staten Island)
-- **📊 Results Display:**
+- **Borough Selection:** Choose from 5 NYC boroughs (Brooklyn, Bronx, Manhattan, Queens, Staten Island)
+- **Results Display:**
   - Predicted hospital admission count (large, prominent display)
   - Exact prediction value
   - Date and borough information
   - Interpretation of the prediction
 
-### Deploy Frontend to Streamlit Cloud
 
-**Option 1: Streamlit Cloud (Recommended - Free)**
-
-📖 **Detailed Guide:** See [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DEPLOYMENT.md) for step-by-step instructions.
-
-**Quick Steps:**
-
-1. ✅ **Code is already pushed to GitHub** (`yifei` branch)
-
-2. **Go to [Streamlit Cloud](https://streamlit.io/cloud)** and sign in with GitHub
-
-3. **Click "New app"** and configure:
-   - **Repository:** `SharmilNK/Data-ML-Engineering`
-   - **Branch:** `main` (or `yifei` for testing)
-   - **Main file path:** `frontend/app_ui.py`
-   - **Python version:** 3.11
-
-4. **Click "Deploy"** (takes 1-2 minutes)
-
-5. **Copy your app URL** (format: `https://your-app-name.streamlit.app`)
-
-6. **Update README** with your deployment URL (see below)
-
-**Option 2: Other Platforms**
-
-- **Hugging Face Spaces:** Upload to a Hugging Face Space with Streamlit
-- **Vercel:** Deploy as a Python app (requires additional configuration)
-- **Heroku:** Deploy using Procfile and requirements.txt
 
 ### Frontend Code Structure
 
@@ -593,16 +346,6 @@ The frontend application provides an interactive web interface to:
 frontend/
 ├── app_ui.py          # Main Streamlit application
 ```
-
-**Key Components:**
-- API health check (cached for 60 seconds)
-- Form-based input collection
-- Date picker with automatic feature extraction
-- API request handling with error management
-- Results visualization with color-coded risk indicators
-- Responsive layout using Streamlit columns
-
-### Frontend Requirements
 
 The frontend requires:
 - `streamlit>=1.26.0`
@@ -612,16 +355,10 @@ These are already included in `requirements.txt`.
 
 ---
 
----
-
-## Team
-
-
-
-
 ## Acknowledgments
 
 - NYC Department of Health and Mental Hygiene (DOHMH)
 - NOAA for weather data
 - EPA for air quality data
+
 
