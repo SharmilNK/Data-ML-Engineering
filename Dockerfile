@@ -1,6 +1,4 @@
-# ============================================
 # FROM AIR TO CARE - DOCKER CONFIGURATION
-# ============================================
 
 # Step 1: Use Python 3.11 as base image
 FROM python:3.11-slim
@@ -35,8 +33,5 @@ EXPOSE 8000
 # Step 10: Use entrypoint script
 ENTRYPOINT ["python", "entrypoint.py"]
 
-# Step 11: Default command (train)
-# CMD ["train"]
-# 确保最后一行是：
 # Step 11: Default command (serve for API)
 CMD ["serve"]

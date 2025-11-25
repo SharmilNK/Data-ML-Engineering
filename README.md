@@ -41,6 +41,9 @@ We built a predictive system that forecasts hospital admissions 3-7 days in adva
 **Deployed API:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app  
 **API Documentation:** https://from-air-to-care-api-4ahsfteyfa-uc.a.run.app/docs
 
+### 🌐 Live Frontend
+**Deployed Frontend:** https://from-air-to-care.streamlit.app/
+
 ---
 
 ## Problem Statement
@@ -507,14 +510,9 @@ print(prediction.json())
 
 ### 🌐 Live Frontend Application
 
-**Deployed Frontend:** [Deploy Now on Streamlit Cloud](https://streamlit.io/cloud)
+**Deployed Frontend:** https://from-air-to-care.streamlit.app/
 
-**Status:** Ready for deployment! Follow the steps in [Deploy Frontend to Streamlit Cloud](#deploy-frontend-to-streamlit-cloud) section.
-
-**After deployment, update this line with your app URL:**
-```markdown
-**Deployed Frontend:** https://your-app-name.streamlit.app
-```
+The frontend application is now live and publicly accessible!
 
 The frontend application provides an interactive web interface to:
 - Select a date (between January 1, 2022 and December 31, 2024)
