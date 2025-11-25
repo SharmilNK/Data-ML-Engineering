@@ -37,7 +37,7 @@ class PredictionRequest(BaseModel):
     Precip_mm: Optional[float] = None
     WindSpeed_mps: Optional[float] = None
     
-    # Air quality features (if available)
+    # Air quality features
     AQ_PM2_5: Optional[float] = None
     AQ_Ozone: Optional[float] = None
     AQ_NO2: Optional[float] = None
@@ -49,10 +49,10 @@ class PredictionRequest(BaseModel):
     quarter: Optional[int] = None
     season: Optional[int] = None
     
-    # Borough (will be one-hot encoded)
+    # Borough (one-hot encoded)
     borough: Optional[str] = None  # "brooklyn", "bronx", "manhattan", "queens", "staten island"
     
-    # Lag features (if available)
+    # Lag features
     Total_Hospitalization_lag7: Optional[float] = None
     Temp_Max_C_lag7: Optional[float] = None
     Humidity_Avg_lag7: Optional[float] = None
