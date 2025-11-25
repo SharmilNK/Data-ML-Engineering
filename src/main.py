@@ -2,19 +2,24 @@
 Main Pipeline - Run full training pipeline
 """
 import yaml
+import os
 from data_loader import load_config, load_data
 from preprocessing import preprocess_data
 from feature_engineering import create_features, create_target
 from train import prepare_splits, run_mlflow_experiment
 
 
-def run_pipeline(config_path="../config/config.yaml"):
+def run_pipeline(config_path=None):
     """Run the complete ML pipeline."""
     
     print("FROM AIR TO CARE - ML PIPELINE")
+    # Build the config path if not provided
+    # Build the config path if not provided
+    if config_path is None:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        config_path = os.path.join(project_root, 'config', 'config.yaml')
     
-    
-    # Load config
+    # Load config (only once!)
     config = load_config(config_path)
     print(f" Config loaded from {config_path}")
     
